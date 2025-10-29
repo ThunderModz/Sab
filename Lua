@@ -118,7 +118,7 @@ loadLabel.TextSize = 12
 loadLabel.TextColor3 = Color3.fromRGB(255,255,255)
 loadLabel.Parent = frame
 
--- Options container (Invisible/Lag/Desync)
+-- Options container (Hitbox/Lag/Desync)
 local optionsContainer = Instance.new("Frame")
 optionsContainer.Size = UDim2.new(1,-24,0,120)
 optionsContainer.Position = UDim2.new(0,12,0,80)
@@ -143,7 +143,7 @@ local function createOptionButton(nameText,idx)
 	return btn
 end
 
-local invisibleBtn = createOptionButton("Invisible",1)
+local invisibleBtn = createOptionButton("Hitbox",1)
 local lagBtn = createOptionButton("Lag",2)
 local desyncBtn = createOptionButton("Desync",3)
 
