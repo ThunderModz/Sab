@@ -1,3 +1,4 @@
+-- ThunderModz Final GUI Stable Fix
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -84,6 +85,7 @@ descLabel.TextSize = 20
 descLabel.TextWrapped = true
 descLabel.TextColor3 = Color3.fromRGB(255,255,255)
 descLabel.TextYAlignment = Enum.TextYAlignment.Center
+descLabel.Visible = false
 descLabel.Parent = frame
 
 -- Loader
@@ -111,7 +113,7 @@ local loadLabel = Instance.new("TextLabel")
 loadLabel.Size = UDim2.new(0,140,0,18)
 loadLabel.Position = UDim2.new(1,-160,1,-48)
 loadLabel.BackgroundTransparency = 1
-loadLabel.Text = "Loading... 10s"
+loadLabel.Text = "Loading... 30s"
 loadLabel.Font = Enum.Font.Gotham
 loadLabel.TextSize = 12
 loadLabel.TextColor3 = Color3.fromRGB(255,255,255)
@@ -193,48 +195,32 @@ msgClose.MouseButton1Click:Connect(function()
 	messageFrame.Visible = false
 end)
 
--- Minimize button toggle: hides description and options
+-- Move functionality (proper drag)
+local dragging = false
+local dragStartPos, dragStartMouse
+moveButton.MouseButton1Down:Connect(function()
+	dragging = true
+	dragStartMouse = UserInputService:GetMouseLocation()
+	dragStartPos = Vector2.new(frame.Position.X.Offset, frame.Position.Y.Offset)
+end)
+UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+end)
+RunService.RenderStepped:Connect(function()
+	if dragging then
+		local delta = UserInputService:GetMouseLocation() - dragStartMouse
+		frame.Position = UDim2.new(0, dragStartPos.X + delta.X, 0, dragStartPos.Y + delta.Y)
+	end
+end)
+
+-- Minimize button toggle
 local minimized = false
 minimizeButton.MouseButton1Click:Connect(function()
 	minimized = not minimized
 	if minimized then
-		TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(frame.Size.X.Scale, frame.Size.X.Offset, 0, 38)}):Play()
+		TweenService:Create(frame,TweenInfo.new(0.3,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{Size = UDim2.new(frame.Size.X.Scale,frame.Size.X.Offset,0,38)}):Play()
 		descLabel.Visible = false
 		optionsContainer.Visible = false
 	else
-		TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(frame.Size.X.Scale, frame.Size.X.Offset, 0, 230)}):Play()
-		descLabel.Visible = true
-		optionsContainer.Visible = true
-	end
-end)
-
--- Close button
-closeButton.MouseButton1Click:Connect(function()
-	screenGui:Destroy()
-end)
-
--- Loader animation
-local LOADER_DURATION = 100
-local startTick = tick()
-TweenService:Create(loaderFill,TweenInfo.new(LOADER_DURATION,Enum.EasingStyle.Linear),{Size=UDim2.new(1,0,1,0)}):Play()
-RunService.Heartbeat:Connect(function()
-	local remaining = math.max(0,LOADER_DURATION-(tick()-startTick))
-	loadLabel.Text = "Loading... "..tostring(math.ceil(remaining)).."s"
-end)
-
-task.delay(LOADER_DURATION,function()
-	loaderBg.Visible = false
-	loadLabel.Visible = false
-	descLabel.Visible = true
-	optionsContainer.Visible = true
-	frame.Size = UDim2.new(0,420,0,200)
-end)
-
--- Option click shows popup
-local function showPopup(optionName)
-	messageFrame.Visible = true
-	msgText.Text = "⚙️ The server is bypassing the anticheat. Please wait...\nIf it still doesn’t load, try using another account.\n\nSelected: "..optionName
-end
-invisibleBtn.MouseButton1Click:Connect(function() showPopup("Invisible") end)
-lagBtn.MouseButton1Click:Connect(function() showPopup("Lag") end)
-desyncBtn.MouseButton1Click:Connect(function() showPopup("Desync") end)
+		local restoreSize = UDim2.new(0,420,0,230)
+		TweenService:Create(frame,TweenInfo.new(0.
