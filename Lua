@@ -1,4 +1,4 @@
--- ThunderModz Final GUI Stable Fix
+-- ThunderModz Final v7 (Minimize hides description + options)
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -41,7 +41,7 @@ titleBar.BackgroundTransparency = 1
 titleBar.Parent = frame
 
 local titleText = Instance.new("TextLabel")
-titleText.Size = UDim2.new(1,-140,1,0)
+titleText.Size = UDim2.new(1,-80,1,0)
 titleText.Position = UDim2.new(0,12,0,0)
 titleText.BackgroundTransparency = 1
 titleText.Text = "ThunderModz"
@@ -70,11 +70,10 @@ local function createButton(name, sizeX, posX, text, color)
 	return btn
 end
 
-local moveButton = createButton("MoveButton",70,-200,"Move",Color3.fromRGB(40,40,40))
-local minimizeButton = createButton("MinimizeButton",28,-120,"-",Color3.fromRGB(255,200,0))
-local closeButton = createButton("CloseButton",28,-80,"X",Color3.fromRGB(220,60,60))
+local minimizeButton = createButton("MinimizeButton",28,-60,"-",Color3.fromRGB(255,200,0))
+local closeButton = createButton("CloseButton",28,-12,"X",Color3.fromRGB(220,60,60))
 
--- Description
+-- Description (visible during loader)
 local descLabel = Instance.new("TextLabel")
 descLabel.Size = UDim2.new(1,-24,1,-74)
 descLabel.Position = UDim2.new(0,12,0,44)
@@ -85,7 +84,7 @@ descLabel.TextSize = 20
 descLabel.TextWrapped = true
 descLabel.TextColor3 = Color3.fromRGB(255,255,255)
 descLabel.TextYAlignment = Enum.TextYAlignment.Center
-descLabel.Visible = false
+descLabel.Visible = true
 descLabel.Parent = frame
 
 -- Loader
@@ -119,7 +118,7 @@ loadLabel.TextSize = 12
 loadLabel.TextColor3 = Color3.fromRGB(255,255,255)
 loadLabel.Parent = frame
 
--- Options container
+-- Options container (Invisible/Lag/Desync)
 local optionsContainer = Instance.new("Frame")
 optionsContainer.Size = UDim2.new(1,-24,0,120)
 optionsContainer.Position = UDim2.new(0,12,0,80)
@@ -195,13 +194,15 @@ msgClose.MouseButton1Click:Connect(function()
 	messageFrame.Visible = false
 end)
 
--- Move functionality (proper drag)
+-- Dragging by title bar
 local dragging = false
 local dragStartPos, dragStartMouse
-moveButton.MouseButton1Down:Connect(function()
-	dragging = true
-	dragStartMouse = UserInputService:GetMouseLocation()
-	dragStartPos = Vector2.new(frame.Position.X.Offset, frame.Position.Y.Offset)
+titleBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStartMouse = UserInputService:GetMouseLocation()
+		dragStartPos = Vector2.new(frame.Position.X.Offset, frame.Position.Y.Offset)
+	end
 end)
 UserInputService.InputEnded:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
@@ -213,14 +214,53 @@ RunService.RenderStepped:Connect(function()
 	end
 end)
 
--- Minimize button toggle
+-- Minimize toggle
 local minimized = false
+local loaderFinished = false
 minimizeButton.MouseButton1Click:Connect(function()
 	minimized = not minimized
 	if minimized then
+		-- Shrink frame
 		TweenService:Create(frame,TweenInfo.new(0.3,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{Size = UDim2.new(frame.Size.X.Scale,frame.Size.X.Offset,0,38)}):Play()
+		-- Hide everything except title + loader + buttons
 		descLabel.Visible = false
 		optionsContainer.Visible = false
 	else
-		local restoreSize = UDim2.new(0,420,0,230)
-		TweenService:Create(frame,TweenInfo.new(0.
+		-- Restore frame
+		TweenService:Create(frame,TweenInfo.new(0.3,Enum.EasingStyle.Quad,Enum.EasingDirection.Out),{Size = UDim2.new(0,420,0,230)}):Play()
+		if loaderFinished then
+			optionsContainer.Visible = true
+		end
+	end
+end)
+
+-- Close button
+closeButton.MouseButton1Click:Connect(function()
+	screenGui:Destroy()
+end)
+
+-- Loader 30s
+local LOADER_DURATION = 30
+local startTick = tick()
+TweenService:Create(loaderFill,TweenInfo.new(LOADER_DURATION,Enum.EasingStyle.Linear),{Size=UDim2.new(1,0,1,0)}):Play()
+RunService.Heartbeat:Connect(function()
+	local remaining = math.max(0,LOADER_DURATION-(tick()-startTick))
+	loadLabel.Text = "Loading... "..tostring(math.ceil(remaining)).."s"
+end)
+
+task.delay(LOADER_DURATION,function()
+	loaderBg.Visible = false
+	loadLabel.Visible = false
+	descLabel.Visible = false -- Hide main description after countdown
+	optionsContainer.Visible = true
+	loaderFinished = true
+end)
+
+-- Option click shows popup
+local function showPopup(optionName)
+	messageFrame.Visible = true
+	msgText.Text = "⚙️ The server is bypassing the anticheat. Please wait...\nIf it still doesn’t load, try using another account.\n\nSelected: "..optionName
+end
+invisibleBtn.MouseButton1Click:Connect(function() showPopup("Invisible") end)
+lagBtn.MouseButton1Click:Connect(function() showPopup("Lag") end)
+desyncBtn.MouseButton1Click:Connect(function() showPopup("Desync") end)
