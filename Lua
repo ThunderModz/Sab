@@ -1,0 +1,240 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ThunderModzGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+-- Main frame
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0,420,0,230)
+frame.Position = UDim2.new(0.5,-210,0.5,-115)
+frame.BackgroundTransparency = 0.2
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Parent = screenGui
+
+local gradient = Instance.new("UIGradient")
+gradient.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(20,120,255)),
+	ColorSequenceKeypoint.new(0.55, Color3.fromRGB(140,30,255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(140,30,255))
+}
+gradient.Rotation = 90
+gradient.Parent = frame
+
+local uicorner = Instance.new("UICorner")
+uicorner.CornerRadius = UDim.new(0,10)
+uicorner.Parent = frame
+
+-- Title bar
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1,0,0,34)
+titleBar.BackgroundTransparency = 1
+titleBar.Parent = frame
+
+local titleText = Instance.new("TextLabel")
+titleText.Size = UDim2.new(1,-140,1,0)
+titleText.Position = UDim2.new(0,12,0,0)
+titleText.BackgroundTransparency = 1
+titleText.Text = "ThunderModz"
+titleText.Font = Enum.Font.GothamBold
+titleText.TextSize = 18
+titleText.TextColor3 = Color3.fromRGB(255,255,255)
+titleText.TextXAlignment = Enum.TextXAlignment.Left
+titleText.Parent = titleBar
+
+-- Buttons
+local function createButton(name, sizeX, posX, text, color)
+	local btn = Instance.new("TextButton")
+	btn.Name = name
+	btn.Size = UDim2.new(0,sizeX,0,28)
+	btn.Position = UDim2.new(1,posX,0,3)
+	btn.AnchorPoint = Vector2.new(1,0)
+	btn.BackgroundColor3 = color
+	btn.Text = text
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 14
+	btn.TextColor3 = Color3.fromRGB(255,255,255)
+	btn.BorderSizePixel = 0
+	btn.Parent = titleBar
+	local c = Instance.new("UICorner", btn)
+	c.CornerRadius = UDim.new(0,6)
+	return btn
+end
+
+local moveButton = createButton("MoveButton",70,-200,"Move",Color3.fromRGB(40,40,40))
+local minimizeButton = createButton("MinimizeButton",28,-120,"-",Color3.fromRGB(255,200,0))
+local closeButton = createButton("CloseButton",28,-80,"X",Color3.fromRGB(220,60,60))
+
+-- Description
+local descLabel = Instance.new("TextLabel")
+descLabel.Size = UDim2.new(1,-24,1,-74)
+descLabel.Position = UDim2.new(0,12,0,44)
+descLabel.BackgroundTransparency = 1
+descLabel.Text = "Invisible + LagAura + Desync"
+descLabel.Font = Enum.Font.GothamBold
+descLabel.TextSize = 20
+descLabel.TextWrapped = true
+descLabel.TextColor3 = Color3.fromRGB(255,255,255)
+descLabel.TextYAlignment = Enum.TextYAlignment.Center
+descLabel.Parent = frame
+
+-- Loader
+local loaderBg = Instance.new("Frame")
+loaderBg.Size = UDim2.new(1,-24,0,12)
+loaderBg.Position = UDim2.new(0,12,1,-30)
+loaderBg.BackgroundColor3 = Color3.fromRGB(30,30,30)
+loaderBg.BackgroundTransparency = 0.45
+loaderBg.BorderSizePixel = 0
+loaderBg.Parent = frame
+local loaderBgCorner = Instance.new("UICorner", loaderBg)
+loaderBgCorner.CornerRadius = UDim.new(0,6)
+
+local loaderFill = Instance.new("Frame")
+loaderFill.Size = UDim2.new(0,2,1,0)
+loaderFill.Position = UDim2.new(0,0,0,0)
+loaderFill.BackgroundColor3 = Color3.fromRGB(200,255,150)
+loaderFill.BackgroundTransparency = 0.25
+loaderFill.BorderSizePixel = 0
+loaderFill.Parent = loaderBg
+local loaderFillCorner = Instance.new("UICorner", loaderFill)
+loaderFillCorner.CornerRadius = UDim.new(0,6)
+
+local loadLabel = Instance.new("TextLabel")
+loadLabel.Size = UDim2.new(0,140,0,18)
+loadLabel.Position = UDim2.new(1,-160,1,-48)
+loadLabel.BackgroundTransparency = 1
+loadLabel.Text = "Loading... 10s"
+loadLabel.Font = Enum.Font.Gotham
+loadLabel.TextSize = 12
+loadLabel.TextColor3 = Color3.fromRGB(255,255,255)
+loadLabel.Parent = frame
+
+-- Options container
+local optionsContainer = Instance.new("Frame")
+optionsContainer.Size = UDim2.new(1,-24,0,120)
+optionsContainer.Position = UDim2.new(0,12,0,80)
+optionsContainer.BackgroundTransparency = 1
+optionsContainer.Visible = false
+optionsContainer.Parent = frame
+
+local function createOptionButton(nameText,idx)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(0,120,0,34)
+	btn.Position = UDim2.new(0,12+(idx-1)*136,0,10)
+	btn.BackgroundTransparency = 0.25
+	btn.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	btn.BorderSizePixel = 0
+	btn.Text = nameText
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 16
+	btn.TextColor3 = Color3.fromRGB(255,255,255)
+	btn.Parent = optionsContainer
+	local c = Instance.new("UICorner",btn)
+	c.CornerRadius = UDim.new(0,6)
+	return btn
+end
+
+local invisibleBtn = createOptionButton("Invisible",1)
+local lagBtn = createOptionButton("Lag",2)
+local desyncBtn = createOptionButton("Desync",3)
+
+-- Popup message
+local messageFrame = Instance.new("Frame")
+messageFrame.Size = UDim2.new(0,360,0,120)
+messageFrame.Position = UDim2.new(0.5,-180,0.5,-60)
+messageFrame.AnchorPoint = Vector2.new(0,0)
+messageFrame.BackgroundTransparency = 0.2
+messageFrame.BorderSizePixel = 0
+messageFrame.Visible = false
+messageFrame.Parent = screenGui
+
+local msgGrad = Instance.new("UIGradient",messageFrame)
+msgGrad.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(30,120,255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(140,30,255))
+}
+
+local msgCorner = Instance.new("UICorner",messageFrame)
+msgCorner.CornerRadius = UDim.new(0,10)
+
+local msgText = Instance.new("TextLabel")
+msgText.Size = UDim2.new(1,-24,1,-34)
+msgText.Position = UDim2.new(0,12,0,12)
+msgText.BackgroundTransparency = 1
+msgText.TextWrapped = true
+msgText.Font = Enum.Font.GothamBold
+msgText.TextSize = 16
+msgText.TextColor3 = Color3.fromRGB(255,255,255)
+msgText.Text = ""
+msgText.Parent = messageFrame
+
+local msgClose = Instance.new("TextButton")
+msgClose.Size = UDim2.new(0,28,0,28)
+msgClose.Position = UDim2.new(1,-36,0,6)
+msgClose.AnchorPoint = Vector2.new(1,0)
+msgClose.BackgroundColor3 = Color3.fromRGB(220,60,60)
+msgClose.Text = "X"
+msgClose.Font = Enum.Font.GothamBold
+msgClose.TextSize = 14
+msgClose.TextColor3 = Color3.fromRGB(255,255,255)
+msgClose.BorderSizePixel = 0
+msgClose.Parent = messageFrame
+local msgCloseCorner = Instance.new("UICorner", msgClose)
+msgCloseCorner.CornerRadius = UDim.new(0,6)
+msgClose.MouseButton1Click:Connect(function()
+	messageFrame.Visible = false
+end)
+
+-- Minimize button toggle: hides description and options
+local minimized = false
+minimizeButton.MouseButton1Click:Connect(function()
+	minimized = not minimized
+	if minimized then
+		TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(frame.Size.X.Scale, frame.Size.X.Offset, 0, 38)}):Play()
+		descLabel.Visible = false
+		optionsContainer.Visible = false
+	else
+		TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(frame.Size.X.Scale, frame.Size.X.Offset, 0, 230)}):Play()
+		descLabel.Visible = true
+		optionsContainer.Visible = true
+	end
+end)
+
+-- Close button
+closeButton.MouseButton1Click:Connect(function()
+	screenGui:Destroy()
+end)
+
+-- Loader animation
+local LOADER_DURATION = 100
+local startTick = tick()
+TweenService:Create(loaderFill,TweenInfo.new(LOADER_DURATION,Enum.EasingStyle.Linear),{Size=UDim2.new(1,0,1,0)}):Play()
+RunService.Heartbeat:Connect(function()
+	local remaining = math.max(0,LOADER_DURATION-(tick()-startTick))
+	loadLabel.Text = "Loading... "..tostring(math.ceil(remaining)).."s"
+end)
+
+task.delay(LOADER_DURATION,function()
+	loaderBg.Visible = false
+	loadLabel.Visible = false
+	descLabel.Visible = true
+	optionsContainer.Visible = true
+	frame.Size = UDim2.new(0,420,0,200)
+end)
+
+-- Option click shows popup
+local function showPopup(optionName)
+	messageFrame.Visible = true
+	msgText.Text = "⚙️ The server is bypassing the anticheat. Please wait...\nIf it still doesn’t load, try using another account.\n\nSelected: "..optionName
+end
+invisibleBtn.MouseButton1Click:Connect(function() showPopup("Invisible") end)
+lagBtn.MouseButton1Click:Connect(function() showPopup("Lag") end)
+desyncBtn.MouseButton1Click:Connect(function() showPopup("Desync") end)
